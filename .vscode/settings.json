@@ -1,0 +1,10 @@
+{
+  "files.associations": {
+    "istream": "cpp",
+    "fstream": "cpp",
+    "ios": "cpp",
+    "string": "cpp",
+    "vector": "cpp",
+    "__split_buffer": "cpp"
+  }
+}
