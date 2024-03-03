@@ -7,23 +7,6 @@ using namespace std;
 
 class Frame {
   public:
-    // vector<int> time;
-    // vector< vector<int> > p;
-    // vector< vector<int> > i;
-    // vector< vector<int> > d;
-    // vector< vector<int> > f;
-    // vector< vector<int> > rcCommand;
-    // vector< vector<int> > setpoint;
-    // vector<double> vBat;
-    // vector<double> amperage;
-    // vector<int> baroAlt;
-    // vector<int> rssi;
-    // vector< vector<int> > gyroADC;
-    // vector< vector<int> > accSmooth;
-    // vector< vector<int> > debug;
-    // vector< vector<int> > motors;
-    // vector<int> energyConsumed;
-    // vector<string> mode;
     double t;
     vector<int> p;
     vector<int> i;
@@ -50,7 +33,12 @@ int main(int argc, char **argv) {
   vector<string> types;
   vector<Frame *> frames;
 
-  fin.open(argv[1]);
+  if (argc != 3) {
+    fprintf(stderr, "Usage: %s (FLAG) [log file]\n", argv[0]);
+    exit(-1);
+  }
+
+  fin.open(argv[argc-1]);
   if(!fin.is_open()) {
     fprintf(stderr, "File didn't open\n");
     exit(-1);
@@ -115,12 +103,43 @@ int main(int argc, char **argv) {
     }
   }
 
-  printf("newgraph\n\n");
-  printf("newcurve pts ");
-  for (i = 0; i < frames.size(); i++) {
-    double currTime = (frames[i]->t - frames[0]->t)/1000000.00;
-    printf("%f %d  ", currTime, frames[i]->motors[0]);
+  string toGraph = argv[1];
+  if (toGraph == "-m") {
+    printf("newgraph\n\n");
+    printf("xaxis size 8\n");
+    printf("yaxis size 4\n");
+    printf("newcurve marktype none linetype solid color 1 0 0 pts ");
+    for (i = 0; i < (int)frames.size(); i++) {
+      double currTime = (frames[i]->t - frames[0]->t)/1000000.00;
+      printf("%f %d  ", currTime, frames[i]->motors[0]);
+    }
+    printf("copygraph\n\n");
+    printf("y_translate -5");
+    printf("\nnewcurve marktype none linetype dashed color 0 1 0 pts ");
+    for (i = 0; i < (int)frames.size(); i++) {
+      double currTime = (frames[i]->t - frames[0]->t)/1000000.00;
+      printf("%f %d  ", currTime, frames[i]->motors[1]);
+    }
+    printf("newpage\n");
+    printf("newgraph\n\n");
+    printf("xaxis size 8\n");
+    printf("yaxis size 4\n");
+    printf("\nnewcurve marktype none linetype dotdotdash color 0 0 1 pts ");
+    for (i = 0; i < (int)frames.size(); i++) {
+      double currTime = (frames[i]->t - frames[0]->t)/1000000.00;
+      printf("%f %d  ", currTime, frames[i]->motors[2]);
+    }
+    printf("copygraph\n\n");
+    printf("y_translate -5");
+    printf("\nnewcurve marktype none linetype longdash color 1 0 1 pts ");
+    for (i = 0; i < (int)frames.size(); i++) {
+      double currTime = (frames[i]->t - frames[0]->t)/1000000.00;
+      printf("%f %d  ", currTime, frames[i]->motors[3]);
+    }
+  } else {
+    printf("didn't work\n");
   }
+  
   printf("\n");
 
   fin.close();
