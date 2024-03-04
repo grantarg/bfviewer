@@ -1,3 +1,13 @@
+/*
+  Grant Johnson
+  gjohns62
+  bfviewer.cpp
+  Discription:
+    - Takes in a decoded CSV file from a betaflight drone
+    - Stores all data in frames to be recalled later
+    - Finally prints out specified graphs in jgraph format to be viewed later
+*/
+
 #include <stdio.h>
 #include <iostream>
 #include <string>
@@ -5,6 +15,7 @@
 #include <vector>
 using namespace std;
 
+/* Frame to store each loopiteration */
 class Frame {
   public:
     double t;
@@ -33,36 +44,42 @@ int main(int argc, char **argv) {
   vector<string> types;
   vector<Frame *> frames;
 
+  /* Make sure proper amount of variables given */
   if (argc != 3) {
     fprintf(stderr, "Usage: %s (FLAG) [log file]\n", argv[0]);
     exit(-1);
   }
 
+  /* Open and check filestream */
   fin.open(argv[argc-1]);
   if(!fin.is_open()) {
+    /* If failed to open, exit and return error */
     fprintf(stderr, "File didn't open\n");
     exit(-1);
   }
 
   for (i = 0; i < 44 && !fin.eof(); str = "", i++) {
+    /* Get datatypes of log csv file */
     getline(fin, str, ',');
     types.push_back(str);
   }
+  /* Get the final value from the row */
   str = "";
   getline(fin, str);
   types.push_back(str);
 
+  /* Loop through the entire CSV file */
   while (!fin.eof()) {
-    //fprintf(stderr, "Line %d", (int)frames.size());
+    /* For the current line, loop through each data point */
     for (c = 0; c < 45; c++) {
+      /* Get the next data point */
       if (c < 44) {
         getline(fin, str, ',');
-        //printf("%s ", str.c_str());
       } else {
         getline(fin, str);
-        //printf("%s ", str.c_str());
       }
 
+      /* Parse data and save in correct field depending on position in row */
       if (c == 1) {
         Frame *f = new Frame;
         f->t = stod(str);
@@ -103,45 +120,129 @@ int main(int argc, char **argv) {
     }
   }
 
+  /* Get the user specified flag, then check what graph to print */
   string toGraph = argv[1];
   if (toGraph == "-m") {
+    /* For motors, create the graph and labels */
     printf("newgraph\n\n");
-    printf("xaxis size 8\n");
-    printf("yaxis size 4\n");
-    printf("newcurve marktype none linetype solid color 1 0 0 pts ");
+    printf("xaxis size 6\n");
+    printf("label fontsize 18 : Time (s)\n");
+    printf("yaxis size 3\n");
+    printf("label fontsize 18 : Speed (kv)\n");
+    printf("newstring hjc vjt x 25 y 1600 fontsize 20 lcolor 0 0 0 : motor[1]\n");
+    printf("newcurve marktype none linetype longdash color 0 0 0 pts ");
     for (i = 0; i < (int)frames.size(); i++) {
+      /* Then loop through each frame and get current time, convert to seconds */
       double currTime = (frames[i]->t - frames[0]->t)/1000000.00;
-      printf("%f %d  ", currTime, frames[i]->motors[0]);
-    }
-    printf("copygraph\n\n");
-    printf("y_translate -5");
-    printf("\nnewcurve marktype none linetype dashed color 0 1 0 pts ");
-    for (i = 0; i < (int)frames.size(); i++) {
-      double currTime = (frames[i]->t - frames[0]->t)/1000000.00;
+      /* Finally print both time in seconds and motor value */
       printf("%f %d  ", currTime, frames[i]->motors[1]);
     }
+    /* Copy previous graph and translate upward */
+    printf("copygraph\n\n");
+    printf("y_translate 5\n");
+    printf("newstring hjc vjt x 25 y 1600 fontsize 20 lcolor 0 0 0 : motor[0]\n");
+    printf("\nnewcurve marktype none linetype longdash color 0 0 0 pts ");
+    for (i = 0; i < (int)frames.size(); i++) {
+      /* Then loop through each frame and get current time, convert to seconds */
+      double currTime = (frames[i]->t - frames[0]->t)/1000000.00;
+      /* Finally print both time in seconds and motor value */
+      printf("%f %d  ", currTime, frames[i]->motors[0]);
+    }
+    /* For motors, create the graph and labels */
     printf("newpage\n");
     printf("newgraph\n\n");
-    printf("xaxis size 8\n");
-    printf("yaxis size 4\n");
-    printf("\nnewcurve marktype none linetype dotdotdash color 0 0 1 pts ");
+    printf("xaxis size 6\n");
+    printf("label fontsize 18 : Time (s)\n");
+    printf("yaxis size 3\n");
+    printf("label fontsize 18 : Speed (kv)\n");
+    printf("newstring hjc vjt x 25 y 1600 fontsize 20 lcolor 0 0 0 : motor[2]\n");
+    printf("\nnewcurve marktype none linetype longdash color 0 0 0 pts ");
     for (i = 0; i < (int)frames.size(); i++) {
+      /* Then loop through each frame and get current time, convert to seconds */
       double currTime = (frames[i]->t - frames[0]->t)/1000000.00;
+      /* Finally print both time in seconds and motor value */
       printf("%f %d  ", currTime, frames[i]->motors[2]);
     }
+    /* Copy previous graph and translate upward */
     printf("copygraph\n\n");
-    printf("y_translate -5");
-    printf("\nnewcurve marktype none linetype longdash color 1 0 1 pts ");
+    printf("y_translate -5\n");
+    printf("newstring hjc vjt x 25 y 1600 fontsize 20 lcolor 0 0 0 : motor[3]\n");
+    printf("\nnewcurve marktype none linetype longdash color 0 0 0 pts ");
     for (i = 0; i < (int)frames.size(); i++) {
+      /* Then loop through each frame and get current time, convert to seconds */
       double currTime = (frames[i]->t - frames[0]->t)/1000000.00;
+      /* Finally print both time in seconds and motor value */
       printf("%f %d  ", currTime, frames[i]->motors[3]);
     }
+  } else if (toGraph == "-s") {
+    /* For RSSI, create the graph and labels */
+    printf("newgraph\n\n");
+    printf("xaxis size 6\n");
+    printf("label fontsize 18 : Time (s)\n");
+    printf("yaxis size 3\n");
+    printf("label fontsize 18 : RSSI\n");
+    printf("newstring hjc vjt x 25 y 900 fontsize 20 lcolor 0 0 0 : Signal Strength\n");
+    printf("newcurve marktype none linetype longdash color 0 0 0 pts ");
+    for (i = 0; i < (int)frames.size(); i++) {
+      /* Then loop through each frame and get current time, convert to seconds */
+      double currTime = (frames[i]->t - frames[0]->t)/1000000.00;
+      /* Finally print both time in seconds and RSSI value */
+      printf("%f %d  ", currTime, frames[i]->rssi);
+    }
+  } else if (toGraph == "-a") {
+    /* For current, create the graph and labels */
+    printf("newgraph\n\n");
+    printf("xaxis size 6\n");
+    printf("label fontsize 18 : Time (s)\n");
+    printf("yaxis size 3\n");
+    printf("label fontsize 18 : Amperes (A)\n");
+    printf("newstring hjc vjt x 25 y 100 fontsize 20 lcolor 0 0 0 : Current\n");
+    printf("newcurve marktype none linetype longdash color 0 0 0 pts ");
+    for (i = 0; i < (int)frames.size(); i++) {
+      /* Then loop through each frame and get current time, convert to seconds */
+      double currTime = (frames[i]->t - frames[0]->t)/1000000.00;
+      /* Finally print both time in seconds and amperage value */
+      printf("%f %f  ", currTime, frames[i]->amperage);
+    }
+  } else if (toGraph == "-v") {
+    /* For vBat, create the graph and labels */
+    printf("newgraph\n\n");
+    printf("xaxis size 6\n");
+    printf("label fontsize 18 : Time (s)\n");
+    printf("yaxis size 3\n");
+    printf("label fontsize 18 : Voltage (v)\n");
+    printf("newstring hjc vjt x 25 y 16 fontsize 20 lcolor 0 0 0 : Battery Voltage\n");
+    printf("newcurve marktype none linetype longdash color 0 0 0 pts ");
+    for (i = 0; i < (int)frames.size(); i++) {
+      /* Then loop through each frame and get current time, convert to seconds */
+      double currTime = (frames[i]->t - frames[0]->t)/1000000.00;
+      /* Finally print both time in seconds and voltage value */
+      printf("%f %f  ", currTime, frames[i]->vBat);
+    }
+  } else if (toGraph == "-e") {
+    /* For charge, create the graph and labels */
+    printf("newgraph\n\n");
+    printf("xaxis size 6\n");
+    printf("label fontsize 18 : Time (s)\n");
+    printf("yaxis size 3\n");
+    printf("label fontsize 18 : Capacity (mAh)\n");
+    printf("newstring hjc vjt x 25 y 200 fontsize 20 lcolor 0 0 0 : Electrical Charge Used\n");
+    printf("newcurve marktype none linetype longdash color 0 0 0 pts ");
+    for (i = 0; i < (int)frames.size(); i++) {
+      /* Then loop through each frame and get current time, convert to seconds */
+      double currTime = (frames[i]->t - frames[0]->t)/1000000.00;
+      /* Finally print both time in seconds and voltage value */
+      printf("%f %d  ", currTime, frames[i]->mAhTotal);
+    }
   } else {
-    printf("didn't work\n");
+    fprintf(stderr,"Non-recognized flag\n");
   }
-  
   printf("\n");
 
+  /* Close the filestream and delete the frames */
+  for (i = 0; i < (int)frames.size(); i++) {
+    delete frames[i];
+  }
   fin.close();
   return 0;
 }
