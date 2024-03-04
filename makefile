@@ -26,3 +26,5 @@ graph: tests
 
 clean:
 	$(RM) bfviewer
+	$(RM) *.pdf
+	$(RM) *.jgr

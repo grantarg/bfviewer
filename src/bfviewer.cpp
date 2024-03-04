@@ -5,7 +5,7 @@
   Discription:
     - Takes in a decoded CSV file from a betaflight drone
     - Stores all data in frames to be recalled later
-    - Finally prints out specified graphs in jgraph format to be viewed later
+    - Finally prints out specified graphs in jgraph format
 */
 
 #include <stdio.h>
